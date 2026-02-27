@@ -181,6 +181,9 @@ final class BlocklistManager: ObservableObject {
         // Notify tunnel to reload rules
         notifyTunnelToReload()
         
+        // Recompile FilterEngine rules with newly downloaded content
+        await FilterEngine.shared.compileAllRules()
+        
         isUpdating = false
         updateProgress = 1.0
     }

@@ -494,13 +494,15 @@ final class FilterEngine: ObservableObject {
     
     nonisolated private func getListFileURL(_ id: String) -> URL? {
         let fm = FileManager.default
-        guard let documentsURL = fm.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
-        let listsDir = documentsURL.appendingPathComponent("FilterLists", isDirectory: true)
-        
+        // Use App Group container — same location BlocklistManager downloads to
+        let appGroup = "group.com.shadowguard.app"
+        let baseURL = fm.containerURL(forSecurityApplicationGroupIdentifier: appGroup)
+            ?? fm.urls(for: .documentDirectory, in: .userDomainMask).first
+        guard let baseURL else { return nil }
+        let listsDir = baseURL.appendingPathComponent("FilterLists", isDirectory: true)
         if !fm.fileExists(atPath: listsDir.path) {
             try? fm.createDirectory(at: listsDir, withIntermediateDirectories: true)
         }
-        
         return listsDir.appendingPathComponent("\(id).txt")
     }
     
