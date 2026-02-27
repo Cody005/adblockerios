@@ -576,7 +576,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ShadowGuard/ShadowGuard.entitlements;
-				"CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]" = ShadowGuard/ShadowGuard-Simulator.entitlements;
+				"CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]" = "ShadowGuard/ShadowGuard-Simulator.entitlements";
+				"EXCLUDED_SOURCE_FILE_NAMES[sdk=iphonesimulator*]" = "*.appex";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -609,7 +610,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ShadowGuard/ShadowGuard.entitlements;
-				"CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]" = ShadowGuard/ShadowGuard-Simulator.entitlements;
+				"CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]" = "ShadowGuard/ShadowGuard-Simulator.entitlements";
+				"EXCLUDED_SOURCE_FILE_NAMES[sdk=iphonesimulator*]" = "*.appex";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -640,7 +642,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ShadowGuardTunnel/ShadowGuardTunnel.entitlements;
-				"CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]" = ShadowGuardTunnel/ShadowGuardTunnel-Simulator.entitlements;
+				"CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]" = "ShadowGuardTunnel/ShadowGuardTunnel-Simulator.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -666,7 +668,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ShadowGuardTunnel/ShadowGuardTunnel.entitlements;
-				"CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]" = ShadowGuardTunnel/ShadowGuardTunnel-Simulator.entitlements;
+				"CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]" = "ShadowGuardTunnel/ShadowGuardTunnel-Simulator.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -692,7 +694,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ShadowGuardDNSProxy/ShadowGuardDNSProxy.entitlements;
-				"CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]" = ShadowGuardDNSProxy/ShadowGuardDNSProxy-Simulator.entitlements;
+				"CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]" = "ShadowGuardDNSProxy/ShadowGuardDNSProxy-Simulator.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -718,7 +720,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ShadowGuardDNSProxy/ShadowGuardDNSProxy.entitlements;
-				"CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]" = ShadowGuardDNSProxy/ShadowGuardDNSProxy-Simulator.entitlements;
+				"CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]" = "ShadowGuardDNSProxy/ShadowGuardDNSProxy-Simulator.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
