@@ -9,12 +9,10 @@
 import NetworkExtension
 import Foundation
 
-class PacketTunnelProvider: NEPacketTunnelProvider {
+final class PacketTunnelProvider: NEPacketTunnelProvider, @unchecked Sendable {
     
     // MARK: - Properties
-    private var pendingStartCompletion: ((Error?) -> Void)?
     private let proxyPort: UInt16 = 8899
-    private let dnsPort: UInt16 = 53
     
     private let appGroup = "group.com.shadowguard.app"
     private var isRunning = false
@@ -25,10 +23,11 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     // High-performance domain matching (for DNS-level blocking)
     private var domainMatcher: TunnelDomainMatcher?
     
-    // Statistics
+    // Statistics (guarded by statsLock for thread safety)
     private var blockedRequests: Int = 0
     private var totalRequests: Int = 0
     private var savedBytes: Int64 = 0
+    private let statsLock = NSLock()
     
     // Logging
     private func log(_ message: String, level: LogLevel = .info) {
@@ -46,18 +45,16 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     }
     
     // MARK: - Lifecycle
-    override func startTunnel(options: [String : NSObject]?, completionHandler: @escaping (Error?) -> Void) {
+    override func startTunnel(options: [String : NSObject]?, completionHandler: @escaping @Sendable (Error?) -> Void) {
         log("Starting tunnel with MITM proxy...")
-        
-        pendingStartCompletion = completionHandler
         
         // Configure tunnel network settings with proxy
         let settings = createTunnelSettings()
         
         setTunnelNetworkSettings(settings) { [weak self] error in
-            guard let self = self else { return }
+            guard let self else { return }
             
-            if let error = error {
+            if let error {
                 self.log("Failed to set tunnel settings: \(error.localizedDescription)", level: .error)
                 completionHandler(error)
                 return
@@ -69,7 +66,8 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
             self.startProxyServer()
             
             // Load blocklists for DNS-level blocking
-            Task {
+            Task { [weak self] in
+                guard let self else { return }
                 await self.loadBlocklists()
                 self.startPacketProcessing()
                 self.isRunning = true
@@ -93,7 +91,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         }
     }
     
-    override func stopTunnel(with reason: NEProviderStopReason, completionHandler: @escaping () -> Void) {
+    override func stopTunnel(with reason: NEProviderStopReason, completionHandler: @escaping @Sendable () -> Void) {
         log("Stopping tunnel with reason: \(reason.rawValue)")
         
         isRunning = false
@@ -122,9 +120,11 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
             }
             
         case "reloadRules":
-            Task {
-                await loadBlocklists()
-                completionHandler?(Data())
+            struct SendableHandler: @unchecked Sendable { let call: ((Data?) -> Void)? }
+            let reloadHandler = SendableHandler(call: completionHandler)
+            Task { [weak self] in
+                await self?.loadBlocklists()
+                reloadHandler.call?(Data())
             }
             
         case "getStatus":
@@ -151,7 +151,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         }
     }
     
-    override func sleep(completionHandler: @escaping () -> Void) {
+    override func sleep(completionHandler: @escaping @Sendable () -> Void) {
         log("Tunnel going to sleep")
         completionHandler()
     }
@@ -238,24 +238,6 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         }
         
         return bypassDomains
-    }
-    
-    private func loadWhitelistDomains() -> Set<String> {
-        // Domains that should never be blocked (essential services)
-        var domains: Set<String> = [
-            "apple.com",
-            "icloud.com",
-            "mzstatic.com",
-            "cdn-apple.com"
-        ]
-        
-        // Load user-configured whitelist from app group
-        if let userDefaults = UserDefaults(suiteName: appGroup),
-           let userDomains = userDefaults.stringArray(forKey: "whitelistDomains") {
-            domains.formUnion(userDomains)
-        }
-        
-        return domains
     }
     
     // MARK: - Blocklist Loading
@@ -405,7 +387,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     
     private func readPackets() {
         packetFlow.readPackets { [weak self] packets, protocols in
-            guard let self = self, self.isRunning else { return }
+            guard let self, self.isRunning else { return }
             
             self.processPackets(packets, protocols: protocols)
             
@@ -419,14 +401,18 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         var allowedProtocols: [NSNumber] = []
         
         for (index, packet) in packets.enumerated() {
+            statsLock.lock()
             totalRequests += 1
+            statsLock.unlock()
             
             let proto = protocols[index]
             
             // Check if this packet should be blocked
             if shouldBlockPacket(packet, protocolNumber: proto) {
+                statsLock.lock()
                 blockedRequests += 1
                 savedBytes += Int64(packet.count)
+                statsLock.unlock()
                 // Drop packet by not adding to allowed list
                 continue
             }
@@ -610,7 +596,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
 }
 
 // MARK: - Tunnel Domain Matcher (Trie-based)
-final class TunnelDomainMatcher {
+final class TunnelDomainMatcher: @unchecked Sendable {
     
     private class Node {
         var children: [String: Node] = [:]
@@ -690,7 +676,7 @@ final class TunnelDomainMatcher {
 }
 
 // MARK: - Tunnel SNI Extractor
-final class TunnelSNIExtractor {
+final class TunnelSNIExtractor: @unchecked Sendable {
     
     static func extractSNI(from data: Data) -> String? {
         guard data.count >= 5 else { return nil }
@@ -773,7 +759,7 @@ final class TunnelSNIExtractor {
 }
 
 // MARK: - Tunnel DNS Parser
-final class TunnelDNSParser {
+final class TunnelDNSParser: @unchecked Sendable {
     
     struct QueryInfo {
         let domain: String
@@ -832,7 +818,9 @@ private struct CustomRuleDTO: Codable {
 // MARK: - MITMProxyServerDelegate
 extension PacketTunnelProvider: MITMProxyServerDelegate {
     func proxyServer(_ server: MITMProxyServer, didBlockRequest url: String, rule: String) {
+        statsLock.lock()
         blockedRequests += 1
+        statsLock.unlock()
         log("MITM Blocked: \(url) (rule: \(rule))")
         
         // Extract domain from URL for stats
@@ -842,7 +830,9 @@ extension PacketTunnelProvider: MITMProxyServerDelegate {
     }
     
     func proxyServer(_ server: MITMProxyServer, didAllowRequest url: String) {
+        statsLock.lock()
         totalRequests += 1
+        statsLock.unlock()
     }
     
     func proxyServer(_ server: MITMProxyServer, didEncounterError error: Error, forURL url: String?) {

@@ -6,10 +6,11 @@
 //  Resolves blocked domains to 0.0.0.0 without external servers
 //
 
-import NetworkExtension
+@preconcurrency import NetworkExtension
+
 import Foundation
 
-class DNSProxyProvider: NEDNSProxyProvider {
+final class DNSProxyProvider: NEDNSProxyProvider, @unchecked Sendable {
     
     // MARK: - Properties
     private let appGroup = "group.com.shadowguard.app"
@@ -18,17 +19,18 @@ class DNSProxyProvider: NEDNSProxyProvider {
     
     private var blockedCount: Int = 0
     private var totalQueries: Int = 0
+    private let statsLock = NSLock()
     
     // MARK: - Lifecycle
     
-    override func startProxy(options: [String: Any]? = nil, completionHandler: @escaping (Error?) -> Void) {
+    override func startProxy(options: [String: Any]? = nil, completionHandler: @escaping @Sendable (Error?) -> Void) {
         log("Starting DNS Proxy Provider")
         
         // Load blocklists
-        Task {
-            await loadBlocklists()
-            isRunning = true
-            log("DNS Proxy started with \(domainMatcher?.totalDomains ?? 0) blocked domains")
+        Task { [weak self, completionHandler] in
+            await self?.loadBlocklists()
+            self?.isRunning = true
+            self?.log("DNS Proxy started with \(self?.domainMatcher?.totalDomains ?? 0) blocked domains")
             completionHandler(nil)
         }
     }
@@ -48,12 +50,13 @@ class DNSProxyProvider: NEDNSProxyProvider {
         return false
     }
     
+    @available(iOS, deprecated: 18.0)
+    @available(macOS, deprecated: 15.0)
     override func handleNewUDPFlow(_ flow: NEAppProxyUDPFlow, initialRemoteEndpoint remoteEndpoint: NWEndpoint) -> Bool {
         guard isRunning else { return false }
         
         // Check if this is DNS traffic (port 53)
-        guard case let .hostPort(host: _, port: port) = remoteEndpoint,
-              port == 53 else {
+        guard isDNSEndpoint(remoteEndpoint) else {
             return false
         }
         
@@ -62,8 +65,22 @@ class DNSProxyProvider: NEDNSProxyProvider {
         return true
     }
     
+    /// Extracts the port from an NWEndpoint without using the deprecated NWHostEndpoint.
+    @available(iOS, deprecated: 18.0)
+    @available(macOS, deprecated: 15.0)
+    private func isDNSEndpoint(_ endpoint: NWEndpoint) -> Bool {
+        let description = endpoint.description
+        // NWEndpoint descriptions are formatted as "host:port"
+        guard let lastColon = description.lastIndex(of: ":") else { return false }
+        let portString = description[description.index(after: lastColon)...]
+        return portString == "53"
+    }
+    
     // MARK: - DNS Handling
     
+    @available(iOS, deprecated: 18.0)
+    @available(macOS, deprecated: 15.0)
+    @available(tvOS, deprecated: 18.0)
     private func handleDNSFlow(_ flow: NEAppProxyUDPFlow, remoteEndpoint: NWEndpoint) {
         flow.open(withLocalEndpoint: nil) { [weak self] error in
             guard let self = self, error == nil else {
@@ -76,6 +93,9 @@ class DNSProxyProvider: NEDNSProxyProvider {
         }
     }
     
+    @available(iOS, deprecated: 18.0)
+    @available(macOS, deprecated: 15.0)
+    @available(tvOS, deprecated: 18.0)
     private func readDNSQueries(flow: NEAppProxyUDPFlow, remoteEndpoint: NWEndpoint) {
         flow.readDatagrams { [weak self] datagrams, endpoints, error in
             guard let self = self else { return }
@@ -93,7 +113,7 @@ class DNSProxyProvider: NEDNSProxyProvider {
             }
             
             // Process each DNS query
-            for (index, datagram) in datagrams.enumerated() {
+            for datagram in datagrams {
                 self.processDNSQuery(datagram, flow: flow, remoteEndpoint: remoteEndpoint)
             }
             
@@ -102,8 +122,12 @@ class DNSProxyProvider: NEDNSProxyProvider {
         }
     }
     
+    @available(iOS, deprecated: 18.0)
+    @available(macOS, deprecated: 15.0)
     private func processDNSQuery(_ query: Data, flow: NEAppProxyUDPFlow, remoteEndpoint: NWEndpoint) {
+        statsLock.lock()
         totalQueries += 1
+        statsLock.unlock()
         
         // Parse DNS query
         guard let queryInfo = DNSParser.parseQuery(query) else {
@@ -117,7 +141,9 @@ class DNSProxyProvider: NEDNSProxyProvider {
         // Check if domain should be blocked
         if let matcher = domainMatcher, matcher.isBlocked(domain) {
             // Block this domain
+            statsLock.lock()
             blockedCount += 1
+            statsLock.unlock()
             log("Blocked DNS: \(domain)")
             
             // Send blocked response (0.0.0.0)
@@ -138,6 +164,8 @@ class DNSProxyProvider: NEDNSProxyProvider {
         forwardDNSQuery(query, flow: flow, remoteEndpoint: remoteEndpoint)
     }
     
+    @available(iOS, deprecated: 18.0)
+    @available(macOS, deprecated: 15.0)
     private func forwardDNSQuery(_ query: Data, flow: NEAppProxyUDPFlow, remoteEndpoint: NWEndpoint) {
         // Forward to upstream DNS server
         // The system will handle the actual forwarding since we're a proxy
@@ -458,5 +486,116 @@ final class DomainTrieSimple {
         }
         
         return current.isEnd
+    }
+}
+
+enum DNSParser {
+    struct QueryInfo {
+        let domain: String
+        let qtype: UInt16
+        let qclass: UInt16
+        let questionEndOffset: Int
+    }
+
+    static func parseQuery(_ data: Data) -> QueryInfo? {
+        guard data.count >= 12 else { return nil }
+
+        var offset = 12
+        var labels: [String] = []
+
+        while offset < data.count {
+            let len = Int(data[offset])
+            offset += 1
+
+            if len == 0 { break }
+            guard len <= 63, offset + len <= data.count else { return nil }
+
+            let labelData = data.subdata(in: offset..<(offset + len))
+            guard let label = String(data: labelData, encoding: .utf8) else { return nil }
+            labels.append(label)
+            offset += len
+        }
+
+        let domain = labels.joined(separator: ".")
+        guard !domain.isEmpty else { return nil }
+        guard offset + 4 <= data.count else { return nil }
+
+        let qtype = readUInt16(data, offset)
+        let qclass = readUInt16(data, offset + 2)
+        let questionEndOffset = offset + 4
+
+        return QueryInfo(domain: domain, qtype: qtype, qclass: qclass, questionEndOffset: questionEndOffset)
+    }
+
+    static func createBlockedResponse(for query: Data) -> Data? {
+        guard let info = parseQuery(query) else { return nil }
+
+        let id = readUInt16(query, 0)
+        let requestFlags = readUInt16(query, 2)
+        let rd = requestFlags & 0x0100
+
+        let isA = info.qtype == 1
+        let isAAAA = info.qtype == 28
+
+        var response = Data()
+        response.reserveCapacity(query.count + 64)
+
+        appendUInt16(id, to: &response)
+
+        if !(isA || isAAAA) {
+            // NXDOMAIN
+            let flags: UInt16 = 0x8000 | rd | 0x0080 | 0x0003
+            appendUInt16(flags, to: &response)
+            appendUInt16(1, to: &response) // QDCOUNT
+            appendUInt16(0, to: &response) // ANCOUNT
+            appendUInt16(0, to: &response) // NSCOUNT
+            appendUInt16(0, to: &response) // ARCOUNT
+
+            response.append(query.subdata(in: 12..<info.questionEndOffset))
+            return response
+        }
+
+        let flags: UInt16 = 0x8000 | rd | 0x0080
+        appendUInt16(flags, to: &response)
+        appendUInt16(1, to: &response) // QDCOUNT
+        appendUInt16(1, to: &response) // ANCOUNT
+        appendUInt16(0, to: &response) // NSCOUNT
+        appendUInt16(0, to: &response) // ARCOUNT
+
+        response.append(query.subdata(in: 12..<info.questionEndOffset))
+
+        // NAME: pointer to question name at 0x000c
+        response.append(0xC0)
+        response.append(0x0C)
+
+        appendUInt16(info.qtype, to: &response) // TYPE
+        appendUInt16(info.qclass, to: &response) // CLASS
+        appendUInt32(60, to: &response) // TTL
+
+        if isA {
+            appendUInt16(4, to: &response)
+            response.append(contentsOf: [0, 0, 0, 0])
+        } else {
+            appendUInt16(16, to: &response)
+            response.append(Data(repeating: 0, count: 16))
+        }
+
+        return response
+    }
+
+    private static func readUInt16(_ data: Data, _ offset: Int) -> UInt16 {
+        (UInt16(data[offset]) << 8) | UInt16(data[offset + 1])
+    }
+
+    private static func appendUInt16(_ value: UInt16, to data: inout Data) {
+        data.append(UInt8((value >> 8) & 0xFF))
+        data.append(UInt8(value & 0xFF))
+    }
+
+    private static func appendUInt32(_ value: UInt32, to data: inout Data) {
+        data.append(UInt8((value >> 24) & 0xFF))
+        data.append(UInt8((value >> 16) & 0xFF))
+        data.append(UInt8((value >> 8) & 0xFF))
+        data.append(UInt8(value & 0xFF))
     }
 }

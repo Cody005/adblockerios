@@ -7,41 +7,34 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		/* Main App Files */
-		A1000001 /* ShadowGuardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001; };
-		A1000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002; };
-		A1000003 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003; };
-		A1000004 /* TunnelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004; };
-		A1000005 /* LogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005; };
-		A1000006 /* FilterEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006; };
-		A1000007 /* CertificateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000007; };
-		A1000008 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000008; };
-		A1000009 /* Styles.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000009; };
-		A1000010 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000010; };
-		A1000011 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000011; };
-		A1000012 /* RulesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000012; };
-		A1000013 /* LogsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000013; };
-		A1000014 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000014; };
-		A1000015 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000015; };
-		A1000016 /* DebugConsoleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000016; };
-		A1000017 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B1000017; };
-		A1000018 /* DomainMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000020; };
-		A1000019 /* SNIExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000021; };
-		A1000020 /* BlocklistManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000022; };
-		A1000021 /* BlocklistUpdateSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000023; };
-		A1000022 /* easylist-mini.txt in Resources */ = {isa = PBXBuildFile; fileRef = B1000024; };
-		A1000023 /* stevenblack-mini.txt in Resources */ = {isa = PBXBuildFile; fileRef = B1000025; };
-		
-		/* Tunnel Extension Files */
-		A2000001 /* PacketTunnelProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000001; };
-		A2000002 /* MITMProxyServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000002; };
-		
-		/* DNS Proxy Extension Files */
-		A4000001 /* DNSProxyProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4000001; };
-		
-		/* Embed Extensions */
-		A3000001 /* ShadowGuardTunnel.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C2000000; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		A3000002 /* ShadowGuardDNSProxy.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C3000000; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A1000001 /* ShadowGuardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001 /* ShadowGuardApp.swift */; };
+		A1000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002 /* ContentView.swift */; };
+		A1000003 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003 /* AppState.swift */; };
+		A1000004 /* TunnelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004 /* TunnelManager.swift */; };
+		A1000005 /* LogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000005 /* LogStore.swift */; };
+		A1000006 /* FilterEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000006 /* FilterEngine.swift */; };
+		A1000007 /* CertificateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000007 /* CertificateManager.swift */; };
+		A1000008 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000008 /* Colors.swift */; };
+		A1000009 /* Styles.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000009 /* Styles.swift */; };
+		A1000010 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000010 /* Components.swift */; };
+		A1000011 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000011 /* DashboardView.swift */; };
+		A1000012 /* RulesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000012 /* RulesView.swift */; };
+		A1000013 /* LogsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000013 /* LogsView.swift */; };
+		A1000014 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000014 /* SettingsView.swift */; };
+		A1000015 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000015 /* AboutView.swift */; };
+		A1000016 /* DebugConsoleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000016 /* DebugConsoleView.swift */; };
+		A1000017 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B1000017 /* Assets.xcassets */; };
+		A1000018 /* DomainMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000020 /* DomainMatcher.swift */; };
+		A1000019 /* SNIExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000021 /* SNIExtractor.swift */; };
+		A1000020 /* BlocklistManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000022 /* BlocklistManager.swift */; };
+		A1000021 /* BlocklistUpdateSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000023 /* BlocklistUpdateSheet.swift */; };
+		A1000022 /* easylist-mini.txt in Resources */ = {isa = PBXBuildFile; fileRef = B1000024 /* easylist-mini.txt */; };
+		A1000023 /* stevenblack-mini.txt in Resources */ = {isa = PBXBuildFile; fileRef = B1000025 /* stevenblack-mini.txt */; };
+		A2000001 /* PacketTunnelProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000001 /* PacketTunnelProvider.swift */; };
+		A2000002 /* MITMProxyServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000002 /* MITMProxyServer.swift */; };
+		A3000001 /* ShadowGuardTunnel.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C2000000 /* ShadowGuardTunnel.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A3000002 /* ShadowGuardDNSProxy.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C3000000 /* ShadowGuardDNSProxy.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A4000001 /* DNSProxyProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4000001 /* DNSProxyProvider.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,14 +42,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = E1000001 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = C2000000;
+			remoteGlobalIDString = T2000000;
 			remoteInfo = ShadowGuardTunnel;
 		};
 		D1000002 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = E1000001 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = C3000000;
+			remoteGlobalIDString = T3000000;
 			remoteInfo = ShadowGuardDNSProxy;
 		};
 /* End PBXContainerItemProxy section */
@@ -77,7 +70,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		/* Main App */
 		B1000001 /* ShadowGuardApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowGuardApp.swift; sourceTree = "<group>"; };
 		B1000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		B1000003 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
@@ -103,19 +95,13 @@
 		B1000023 /* BlocklistUpdateSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlocklistUpdateSheet.swift; sourceTree = "<group>"; };
 		B1000024 /* easylist-mini.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "easylist-mini.txt"; sourceTree = "<group>"; };
 		B1000025 /* stevenblack-mini.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "stevenblack-mini.txt"; sourceTree = "<group>"; };
-		
-		/* Tunnel Extension */
 		B2000001 /* PacketTunnelProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketTunnelProvider.swift; sourceTree = "<group>"; };
 		B2000002 /* MITMProxyServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MITMProxyServer.swift; sourceTree = "<group>"; };
 		B2000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B2000004 /* ShadowGuardTunnel.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ShadowGuardTunnel.entitlements; sourceTree = "<group>"; };
-		
-		/* DNS Proxy Extension */
 		B4000001 /* DNSProxyProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DNSProxyProvider.swift; sourceTree = "<group>"; };
 		B4000002 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B4000003 /* ShadowGuardDNSProxy.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ShadowGuardDNSProxy.entitlements; sourceTree = "<group>"; };
-		
-		/* Products */
 		C1000000 /* ShadowGuard.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ShadowGuard.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C2000000 /* ShadowGuardTunnel.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShadowGuardTunnel.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3000000 /* ShadowGuardDNSProxy.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShadowGuardDNSProxy.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -280,7 +266,7 @@
 /* Begin PBXNativeTarget section */
 		T1000000 /* ShadowGuard */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = X1000001;
+			buildConfigurationList = X1000001 /* Build configuration list for PBXNativeTarget "ShadowGuard" */;
 			buildPhases = (
 				P1000001 /* Sources */,
 				F2000001 /* Frameworks */,
@@ -300,7 +286,7 @@
 		};
 		T2000000 /* ShadowGuardTunnel */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = X2000001;
+			buildConfigurationList = X2000001 /* Build configuration list for PBXNativeTarget "ShadowGuardTunnel" */;
 			buildPhases = (
 				P2000001 /* Sources */,
 				F2000002 /* Frameworks */,
@@ -317,7 +303,7 @@
 		};
 		T3000000 /* ShadowGuardDNSProxy */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = X3000001;
+			buildConfigurationList = X3000001 /* Build configuration list for PBXNativeTarget "ShadowGuardDNSProxy" */;
 			buildPhases = (
 				P3000001 /* Sources */,
 				F2000003 /* Frameworks */,
@@ -340,7 +326,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1500;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 2630;
 				TargetAttributes = {
 					T1000000 = {
 						CreatedOnToolsVersion = 15.0;
@@ -353,7 +339,7 @@
 					};
 				};
 			};
-			buildConfigurationList = X0000001;
+			buildConfigurationList = X0000001 /* Build configuration list for PBXProject "ShadowGuard" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -461,7 +447,6 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		/* Project Debug */
 		Y0000001 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -520,13 +505,13 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
-		/* Project Release */
 		Y0000002 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -578,13 +563,13 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_VERSION = 5.0;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
-		/* Main App Debug */
 		Y1000001 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -593,10 +578,12 @@
 				CODE_SIGN_ENTITLEMENTS = ShadowGuard/ShadowGuard.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 23W7Z8WZ4F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ShadowGuard/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ShadowGuard;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -613,11 +600,9 @@
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 			};
 			name = Debug;
 		};
-		/* Main App Release */
 		Y1000002 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -626,10 +611,12 @@
 				CODE_SIGN_ENTITLEMENTS = ShadowGuard/ShadowGuard.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 23W7Z8WZ4F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ShadowGuard/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ShadowGuard;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -646,11 +633,9 @@
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 			};
 			name = Release;
 		};
-		/* Tunnel Debug */
 		Y2000001 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -676,7 +661,6 @@
 			};
 			name = Debug;
 		};
-		/* Tunnel Release */
 		Y2000002 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -702,7 +686,6 @@
 			};
 			name = Release;
 		};
-		/* DNS Proxy Debug */
 		Y3000001 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -728,7 +711,6 @@
 			};
 			name = Debug;
 		};
-		/* DNS Proxy Release */
 		Y3000002 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -757,7 +739,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		X0000001 /* Build configuration list for PBXProject */ = {
+		X0000001 /* Build configuration list for PBXProject "ShadowGuard" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				Y0000001 /* Debug */,

@@ -10,6 +10,9 @@ import Foundation
 import Security
 import CryptoKit
 
+extension SecCertificate: @retroactive @unchecked Sendable {}
+extension SecKey: @retroactive @unchecked Sendable {}
+
 actor CertificateManager {
     static let shared = CertificateManager()
     

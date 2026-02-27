@@ -609,8 +609,6 @@ struct RuleEditorView: View {
         )
         
         if case .edit(let existingRule) = mode {
-            var updatedRule = rule
-            // Keep the same ID
             filterEngine.deleteCustomRule(existingRule)
         }
         

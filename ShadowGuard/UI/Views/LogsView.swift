@@ -10,7 +10,6 @@ import SwiftUI
 struct LogsView: View {
     @EnvironmentObject var logStore: LogStore
     @State private var isAutoScrollEnabled = true
-    @State private var showingFilters = false
     
     var body: some View {
         NavigationStack {

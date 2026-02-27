@@ -6,9 +6,8 @@
 //  Updated for SNI-based blocking (no MITM required)
 //
 
-import Foundation
-import NetworkExtension
-import Combine
+@preconcurrency import Foundation
+@preconcurrency import NetworkExtension
 
 @MainActor
 final class TunnelManager: ObservableObject {
@@ -141,7 +140,7 @@ final class TunnelManager: ObservableObject {
             connectionDate = Date()
             LogStore.shared.addLog(.info, "Tunnel start requested")
             
-            await AppState.shared.updateProtectionStatus(enabled: true)
+            AppState.shared.updateProtectionStatus(enabled: true)
         } catch {
             errorMessage = "Failed to start tunnel: \(error.localizedDescription)"
             LogStore.shared.addLog(.error, "Failed to start tunnel: \(error.localizedDescription)")
@@ -157,7 +156,7 @@ final class TunnelManager: ObservableObject {
         LogStore.shared.addLog(.info, "Tunnel stop requested")
         
         Task { @MainActor in
-            await AppState.shared.updateProtectionStatus(enabled: false)
+            AppState.shared.updateProtectionStatus(enabled: false)
         }
     }
     
@@ -237,10 +236,10 @@ final class TunnelManager: ObservableObject {
                 
                 switch self.tunnelStatus {
                 case .connected:
-                    await AppState.shared.updateProtectionStatus(enabled: true)
+                    AppState.shared.updateProtectionStatus(enabled: true)
                     LogStore.shared.addLog(.info, "Tunnel connected")
                 case .disconnected:
-                    await AppState.shared.updateProtectionStatus(enabled: false)
+                    AppState.shared.updateProtectionStatus(enabled: false)
                     LogStore.shared.addLog(.info, "Tunnel disconnected")
                 case .connecting:
                     LogStore.shared.addLog(.info, "Tunnel connecting...")

@@ -15,7 +15,6 @@ struct DashboardView: View {
     @State private var showingBlocklistUpdate = false
     @State private var showingCAWizard = false
     @State private var isPaused = false
-    @State private var isAnimating = false
     
     var body: some View {
         NavigationStack {
@@ -383,17 +382,6 @@ struct DashboardView: View {
         }
         .padding(16)
         .glassCard()
-    }
-    
-    // MARK: - CA Warning Banner
-    private var caWarningBanner: some View {
-        Button(action: { showingCAWizard = true }) {
-            AlertBanner(
-                message: "Certificate not trusted. Tap to complete setup.",
-                type: .warning
-            )
-        }
-        .buttonStyle(.plain)
     }
     
     // MARK: - Helpers

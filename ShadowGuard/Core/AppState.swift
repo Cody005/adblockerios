@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Combine
 
 @MainActor
 final class AppState: ObservableObject {
@@ -25,17 +24,20 @@ final class AppState: ObservableObject {
     
     // MARK: - App Storage
     @AppStorage("totalBlockedCount") private var storedTotalBlocked: Int = 0
-    @AppStorage("savedBandwidthBytes") private var storedSavedBandwidth: Int64 = 0
+    @AppStorage("savedBandwidthBytes") private var storedSavedBandwidth: Int = 0
     @AppStorage("firstLaunchDate") private var firstLaunchDate: Double = Date().timeIntervalSince1970
     @AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding: Bool = false
     
-    private var cancellables = Set<AnyCancellable>()
-    
     private init() {
         blockedTotal = storedTotalBlocked
-        savedBandwidth = storedSavedBandwidth
+        savedBandwidth = Int64(storedSavedBandwidth)
         loadTopBlockedDomains()
-        calculateProtectionLevel()
+        
+        // Defer protection level calculation to avoid circular singleton access
+        // (AppState.shared -> FilterEngine.shared during init)
+        Task { @MainActor in
+            self.calculateProtectionLevel()
+        }
     }
     
     // MARK: - Methods
@@ -45,7 +47,7 @@ final class AppState: ObservableObject {
         storedTotalBlocked = blockedTotal
         
         savedBandwidth += savedBytes
-        storedSavedBandwidth = savedBandwidth
+        storedSavedBandwidth = Int(savedBandwidth)
         
         updateTopBlockedDomains(domain: domain)
         calculateProtectionLevel()

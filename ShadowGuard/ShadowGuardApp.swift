@@ -7,7 +7,6 @@
 //
 
 import SwiftUI
-import NetworkExtension
 
 @main
 struct ShadowGuardApp: App {

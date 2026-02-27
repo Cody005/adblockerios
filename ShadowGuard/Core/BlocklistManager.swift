@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Combine
 
 @MainActor
 final class BlocklistManager: ObservableObject {
@@ -208,7 +207,7 @@ final class BlocklistManager: ObservableObject {
         saveCustomSources()
         
         // Download immediately
-        Task {
+        Task { @MainActor in
             do {
                 try await downloadAndSaveList(source)
                 notifyTunnelToReload()
@@ -358,7 +357,7 @@ final class BlocklistManager: ObservableObject {
     private func scheduleAutoUpdate() {
         updateTask?.cancel()
         
-        updateTask = Task {
+        updateTask = Task { @MainActor in
             while !Task.isCancelled {
                 if needsUpdate() {
                     await updateAllLists()

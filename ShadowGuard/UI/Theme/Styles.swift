@@ -361,12 +361,14 @@ struct ParticleEffect: View {
     
     private func animateParticles(in size: CGSize) {
         Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { _ in
-            for i in particles.indices {
-                particles[i].y -= CGFloat(particles[i].speed)
-                
-                if particles[i].y < 0 {
-                    particles[i].y = size.height
-                    particles[i].x = CGFloat.random(in: 0...size.width)
+            MainActor.assumeIsolated {
+                for i in particles.indices {
+                    particles[i].y -= CGFloat(particles[i].speed)
+                    
+                    if particles[i].y < 0 {
+                        particles[i].y = size.height
+                        particles[i].x = CGFloat.random(in: 0...size.width)
+                    }
                 }
             }
         }

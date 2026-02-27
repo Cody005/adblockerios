@@ -266,7 +266,7 @@ final class BloomFilter: @unchecked Sendable {
         let c1: UInt64 = 0xcc9e2d51
         let c2: UInt64 = 0x1b873593
         
-        for (i, byte) in data.enumerated() {
+        for (_, byte) in data.enumerated() {
             var k = UInt64(byte)
             k = k &* c1
             k = (k << 15) | (k >> 49)

@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Combine
 
 @MainActor
 final class FilterEngine: ObservableObject {
@@ -24,14 +23,12 @@ final class FilterEngine: ObservableObject {
     private var redirectRules: [RedirectRule] = []
     private var cosmeticRules: [CosmeticRule] = []
     
-    private let rulesQueue = DispatchQueue(label: "com.shadowguard.rules", qos: .userInitiated)
-    private let fileManager = FileManager.default
     
     // MARK: - Initialization
     private init() {
         setupBuiltInLists()
         loadCustomRules()
-        Task {
+        Task { @MainActor in
             await compileAllRules()
         }
     }
@@ -145,7 +142,7 @@ final class FilterEngine: ObservableObject {
         if let index = builtInLists.firstIndex(where: { $0.id == list.id }) {
             builtInLists[index].isEnabled.toggle()
             saveListStates()
-            Task {
+            Task { @MainActor in
                 await compileAllRules()
             }
         }
@@ -189,7 +186,7 @@ final class FilterEngine: ObservableObject {
     func addCustomRule(_ rule: CustomRule) {
         customRules.append(rule)
         saveCustomRules()
-        Task {
+        Task { @MainActor in
             await compileAllRules()
         }
     }
@@ -198,7 +195,7 @@ final class FilterEngine: ObservableObject {
         if let index = customRules.firstIndex(where: { $0.id == rule.id }) {
             customRules[index] = rule
             saveCustomRules()
-            Task {
+            Task { @MainActor in
                 await compileAllRules()
             }
         }
@@ -207,7 +204,7 @@ final class FilterEngine: ObservableObject {
     func deleteCustomRule(_ rule: CustomRule) {
         customRules.removeAll { $0.id == rule.id }
         saveCustomRules()
-        Task {
+        Task { @MainActor in
             await compileAllRules()
         }
     }
@@ -225,62 +222,56 @@ final class FilterEngine: ObservableObject {
     
     // MARK: - Rule Compilation
     func compileAllRules() async {
-        await withCheckedContinuation { continuation in
-            rulesQueue.async { [weak self] in
-                guard let self = self else {
-                    continuation.resume()
-                    return
+        let listsSnapshot = builtInLists
+        let customSnapshot = customRules
+
+        let result = await Task.detached(priority: .userInitiated) { [weak self] () -> (block: [CompiledRule], whitelist: [CompiledRule], redirect: [RedirectRule], cosmetic: [CosmeticRule]) in
+            guard let self else { return ([], [], [], []) }
+
+            var newCompiledRules: [CompiledRule] = []
+            var newWhitelistRules: [CompiledRule] = []
+            var newRedirectRules: [RedirectRule] = []
+            var newCosmeticRules: [CosmeticRule] = []
+
+            for list in listsSnapshot where list.isEnabled {
+                if let content = self.loadListContent(list.id) {
+                    let parsed = self.parseFilterList(content)
+                    newCompiledRules.append(contentsOf: parsed.blockRules)
+                    newWhitelistRules.append(contentsOf: parsed.whitelistRules)
+                    newCosmeticRules.append(contentsOf: parsed.cosmeticRules)
                 }
-                
-                var newCompiledRules: [CompiledRule] = []
-                var newWhitelistRules: [CompiledRule] = []
-                var newRedirectRules: [RedirectRule] = []
-                var newCosmeticRules: [CosmeticRule] = []
-                
-                // Parse built-in lists
-                for list in self.builtInLists where list.isEnabled {
-                    if let content = self.loadListContent(list.id) {
-                        let parsed = self.parseFilterList(content)
-                        newCompiledRules.append(contentsOf: parsed.blockRules)
-                        newWhitelistRules.append(contentsOf: parsed.whitelistRules)
-                        newCosmeticRules.append(contentsOf: parsed.cosmeticRules)
-                    }
-                }
-                
-                // Parse custom rules
-                for rule in self.customRules where rule.isEnabled {
-                    switch rule.type {
-                    case .block:
-                        if let compiled = self.parseRule(rule.pattern) {
-                            newCompiledRules.append(compiled)
-                        }
-                    case .allow:
-                        if let compiled = self.parseRule(rule.pattern) {
-                            newWhitelistRules.append(compiled)
-                        }
-                    case .redirect:
-                        if let redirect = self.parseRedirectRule(rule.pattern, to: rule.redirectTarget ?? "0.0.0.0") {
-                            newRedirectRules.append(redirect)
-                        }
-                    }
-                }
-                
-                Task { @MainActor in
-                    self.compiledRules = newCompiledRules
-                    self.whitelistRules = newWhitelistRules
-                    self.redirectRules = newRedirectRules
-                    self.cosmeticRules = newCosmeticRules
-                    
-                    LogStore.shared.addLog(.info, "Compiled \(newCompiledRules.count) block rules, \(newWhitelistRules.count) whitelist rules")
-                }
-                
-                continuation.resume()
             }
-        }
+
+            for rule in customSnapshot where rule.isEnabled {
+                switch rule.type {
+                case .block:
+                    if let compiled = self.parseRule(rule.pattern) {
+                        newCompiledRules.append(compiled)
+                    }
+                case .allow:
+                    if let compiled = self.parseRule(rule.pattern) {
+                        newWhitelistRules.append(compiled)
+                    }
+                case .redirect:
+                    if let redirect = self.parseRedirectRule(rule.pattern, to: rule.redirectTarget ?? "0.0.0.0") {
+                        newRedirectRules.append(redirect)
+                    }
+                }
+            }
+
+            return (newCompiledRules, newWhitelistRules, newRedirectRules, newCosmeticRules)
+        }.value
+
+        compiledRules = result.block
+        whitelistRules = result.whitelist
+        redirectRules = result.redirect
+        cosmeticRules = result.cosmetic
+
+        LogStore.shared.addLog(.info, "Compiled \(result.block.count) block rules, \(result.whitelist.count) whitelist rules")
     }
     
     // MARK: - Parsing
-    private func parseFilterList(_ content: String) -> ParsedList {
+    nonisolated private func parseFilterList(_ content: String) -> ParsedList {
         var blockRules: [CompiledRule] = []
         var whitelistRules: [CompiledRule] = []
         var cosmeticRules: [CosmeticRule] = []
@@ -335,7 +326,7 @@ final class FilterEngine: ObservableObject {
         return ParsedList(blockRules: blockRules, whitelistRules: whitelistRules, cosmeticRules: cosmeticRules)
     }
     
-    private func parseRule(_ ruleText: String) -> CompiledRule? {
+    nonisolated private func parseRule(_ ruleText: String) -> CompiledRule? {
         var pattern = ruleText
         var options = RuleOptions()
         
@@ -356,7 +347,7 @@ final class FilterEngine: ObservableObject {
         )
     }
     
-    private func parseOptions(_ optionsString: String) -> RuleOptions {
+    nonisolated private func parseOptions(_ optionsString: String) -> RuleOptions {
         var options = RuleOptions()
         let parts = optionsString.split(separator: ",")
         
@@ -395,7 +386,7 @@ final class FilterEngine: ObservableObject {
         return options
     }
     
-    private func convertToRegex(_ pattern: String) -> NSRegularExpression? {
+    nonisolated private func convertToRegex(_ pattern: String) -> NSRegularExpression? {
         var regexPattern = pattern
         
         // Handle special AdBlock syntax
@@ -429,7 +420,7 @@ final class FilterEngine: ObservableObject {
         }
     }
     
-    private func parseCosmeticRule(_ ruleText: String) -> CosmeticRule? {
+    nonisolated private func parseCosmeticRule(_ ruleText: String) -> CosmeticRule? {
         // Element hiding: domain##selector or ##selector
         if let range = ruleText.range(of: "##") {
             let domains = String(ruleText[..<range.lowerBound])
@@ -463,7 +454,7 @@ final class FilterEngine: ObservableObject {
         return nil
     }
     
-    private func parseRedirectRule(_ pattern: String, to target: String) -> RedirectRule? {
+    nonisolated private func parseRedirectRule(_ pattern: String, to target: String) -> RedirectRule? {
         guard let regex = convertToRegex(pattern) else { return nil }
         
         return RedirectRule(
@@ -491,22 +482,23 @@ final class FilterEngine: ObservableObject {
         }
     }
     
-    private func saveListContent(_ id: String, content: String) {
+    nonisolated private func saveListContent(_ id: String, content: String) {
         guard let url = getListFileURL(id) else { return }
         try? content.write(to: url, atomically: true, encoding: .utf8)
     }
     
-    private func loadListContent(_ id: String) -> String? {
+    nonisolated private func loadListContent(_ id: String) -> String? {
         guard let url = getListFileURL(id) else { return nil }
         return try? String(contentsOf: url, encoding: .utf8)
     }
     
-    private func getListFileURL(_ id: String) -> URL? {
-        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
+    nonisolated private func getListFileURL(_ id: String) -> URL? {
+        let fm = FileManager.default
+        guard let documentsURL = fm.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
         let listsDir = documentsURL.appendingPathComponent("FilterLists", isDirectory: true)
         
-        if !fileManager.fileExists(atPath: listsDir.path) {
-            try? fileManager.createDirectory(at: listsDir, withIntermediateDirectories: true)
+        if !fm.fileExists(atPath: listsDir.path) {
+            try? fm.createDirectory(at: listsDir, withIntermediateDirectories: true)
         }
         
         return listsDir.appendingPathComponent("\(id).txt")
@@ -569,7 +561,7 @@ final class FilterEngine: ObservableObject {
         }
         
         saveCustomRules()
-        Task {
+        Task { @MainActor in
             await compileAllRules()
         }
     }

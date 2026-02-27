@@ -367,7 +367,7 @@ final class DNSParser {
     
     /// Create a DNS response that blocks the domain (returns 0.0.0.0)
     static func createBlockedResponse(for query: Data) -> Data? {
-        guard let queryInfo = parseQuery(query) else { return nil }
+        guard parseQuery(query) != nil else { return nil }
         
         var response = Data()
         

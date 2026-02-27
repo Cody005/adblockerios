@@ -375,7 +375,7 @@ struct SettingsView: View {
     
     private func deleteCA() {
         Task {
-            try? CertificateManager.shared.deleteRootCA()
+            try? await CertificateManager.shared.deleteRootCA()
             await MainActor.run {
                 appState.updateCAStatus(installed: false, trusted: false)
             }

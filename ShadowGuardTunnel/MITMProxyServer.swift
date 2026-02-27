@@ -18,7 +18,7 @@ protocol MITMProxyServerDelegate: AnyObject {
 }
 
 // MARK: - MITMProxyServer
-class MITMProxyServer {
+final class MITMProxyServer: @unchecked Sendable {
     
     // MARK: - Properties
     private let port: UInt16
@@ -169,7 +169,7 @@ protocol ProxyConnectionDelegate: AnyObject {
 }
 
 // MARK: - ProxyConnection
-class ProxyConnection {
+final class ProxyConnection: @unchecked Sendable {
     let id: UUID
     private let clientConnection: NWConnection
     private var serverConnection: NWConnection?
@@ -194,14 +194,15 @@ class ProxyConnection {
     
     func start() {
         clientConnection.stateUpdateHandler = { [weak self] state in
+            guard let self else { return }
             switch state {
             case .ready:
-                self?.readClientData()
+                self.readClientData()
             case .failed(let error):
-                self?.delegate?.connection(self!, didEncounterError: error, forURL: self?.targetHost)
-                self?.cancel()
+                self.delegate?.connection(self, didEncounterError: error, forURL: self.targetHost)
+                self.cancel()
             case .cancelled:
-                self?.delegate?.connectionDidClose(self!)
+                self.delegate?.connectionDidClose(self)
             default:
                 break
             }
@@ -298,14 +299,15 @@ class ProxyConnection {
         // Send 200 Connection Established
         let response = "HTTP/1.1 200 Connection Established\r\n\r\n"
         clientConnection.send(content: response.data(using: .utf8), completion: .contentProcessed { [weak self] error in
+            guard let self else { return }
             if let error = error {
-                self?.delegate?.connection(self!, didEncounterError: error, forURL: host)
-                self?.cancel()
+                self.delegate?.connection(self, didEncounterError: error, forURL: host)
+                self.cancel()
                 return
             }
             
             // Start TLS handshake with client using our generated certificate
-            self?.startClientTLS(for: host)
+            self.startClientTLS(for: host)
         })
     }
     
@@ -383,19 +385,17 @@ class ProxyConnection {
             return
         }
         
-        let fullURL = target
-        
         // Check filter rules
-        let filterResult = filterEngine.shouldBlock(url: fullURL, domain: host)
+        let filterResult = filterEngine.shouldBlock(url: target, domain: host)
         
         if filterResult.blocked {
             // Block the request
-            delegate?.connection(self, didBlockURL: fullURL, rule: filterResult.rule ?? "Unknown", savedBytes: Int64(requestBuffer.count))
+            delegate?.connection(self, didBlockURL: target, rule: filterResult.rule ?? "Unknown", savedBytes: Int64(requestBuffer.count))
             sendBlockedResponse()
             return
         }
         
-        delegate?.connection(self, didAllowURL: fullURL)
+        delegate?.connection(self, didAllowURL: target)
         
         // Forward to server
         connectToServer(host: host, port: targetPort, useTLS: false)
@@ -424,8 +424,9 @@ class ProxyConnection {
             // Verify server certificate
             sec_protocol_options_set_verify_block(tlsOptions.securityProtocolOptions, { _, trust, completion in
                 // Verify the server's certificate
-                SecTrustEvaluateAsyncOnQueue(trust, DispatchQueue.global()) { _, result in
-                    completion(result == .proceed || result == .unspecified)
+                let secTrust = sec_trust_copy_ref(trust).takeRetainedValue()
+                SecTrustEvaluateAsyncWithError(secTrust, DispatchQueue.global()) { _, result, _ in
+                    completion(result)
                 }
             }, queue)
             
@@ -437,16 +438,17 @@ class ProxyConnection {
         serverConnection = NWConnection(to: endpoint, using: parameters)
         
         serverConnection?.stateUpdateHandler = { [weak self] state in
+            guard let self else { return }
             switch state {
             case .ready:
                 if directTunnel {
-                    self?.startBidirectionalTunnel()
+                    self.startBidirectionalTunnel()
                 } else {
-                    self?.forwardRequestToServer()
+                    self.forwardRequestToServer()
                 }
             case .failed(let error):
-                self?.delegate?.connection(self!, didEncounterError: error, forURL: host)
-                self?.cancel()
+                self.delegate?.connection(self, didEncounterError: error, forURL: host)
+                self.cancel()
             default:
                 break
             }
@@ -460,14 +462,15 @@ class ProxyConnection {
         
         // Forward the buffered request
         server.send(content: requestBuffer, completion: .contentProcessed { [weak self] error in
+            guard let self else { return }
             if let error = error {
-                self?.delegate?.connection(self!, didEncounterError: error, forURL: self?.targetHost)
-                self?.cancel()
+                self.delegate?.connection(self, didEncounterError: error, forURL: self.targetHost)
+                self.cancel()
                 return
             }
             
             // Start reading response
-            self?.readServerResponse()
+            self.readServerResponse()
         })
     }
     
@@ -572,7 +575,7 @@ class ProxyConnection {
 }
 
 // MARK: - TunnelFilterEngine
-class TunnelFilterEngine {
+final class TunnelFilterEngine: @unchecked Sendable {
     private let appGroup: String
     private var blockRules: [FilterRule] = []
     private var whitelistRules: [FilterRule] = []
@@ -669,12 +672,12 @@ struct FilterRule: Codable {
 }
 
 // MARK: - TunnelCertificateManager
-class TunnelCertificateManager {
+final class TunnelCertificateManager: @unchecked Sendable {
     private var rootIdentity: SecIdentity?
     private var certificateCache: [String: SecIdentity] = [:]
     private let cacheLock = NSLock()
     
-    func getCertificate(for domain: String, completion: @escaping (Result<SecIdentity, Error>) -> Void) {
+    func getCertificate(for domain: String, completion: @escaping @Sendable (Result<SecIdentity, Error>) -> Void) {
         cacheLock.lock()
         
         // Check cache
@@ -708,10 +711,10 @@ class TunnelCertificateManager {
     
     private func generateCertificate(for domain: String) throws -> SecIdentity {
         // Load root CA from keychain
-        let rootCA = try loadRootCA()
+        _ = try loadRootCA()
         
         // Generate key pair for domain
-        let keyPair = try generateKeyPair()
+        _ = try generateKeyPair()
         
         // Create certificate signed by root CA
         // This is a simplified version - full implementation in CertificateManager
@@ -731,7 +734,7 @@ class TunnelCertificateManager {
         var certResult: CFTypeRef?
         let certStatus = SecItemCopyMatching(certQuery as CFDictionary, &certResult)
         
-        guard certStatus == errSecSuccess, let certificate = certResult else {
+        guard certStatus == errSecSuccess, certResult != nil else {
             throw CertError.rootCANotFound
         }
         
@@ -745,11 +748,11 @@ class TunnelCertificateManager {
         var keyResult: CFTypeRef?
         let keyStatus = SecItemCopyMatching(keyQuery as CFDictionary, &keyResult)
         
-        guard keyStatus == errSecSuccess, let privateKey = keyResult else {
+        guard keyStatus == errSecSuccess, keyResult != nil else {
             throw CertError.rootCANotFound
         }
         
-        return (certificate as! SecCertificate, privateKey as! SecKey)
+        return (certResult! as! SecCertificate, keyResult! as! SecKey)
     }
     
     private func generateKeyPair() throws -> (publicKey: SecKey, privateKey: SecKey) {
