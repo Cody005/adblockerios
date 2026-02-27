@@ -134,6 +134,13 @@ final class BlocklistManager: ObservableObject {
         loadCustomSources()
         loadLastUpdateDate()
         scheduleAutoUpdate()
+        
+        // First launch: download lists immediately if never updated before
+        if lastUpdateDate == nil {
+            Task { @MainActor in
+                await updateAllLists()
+            }
+        }
     }
     
     /// All sources (built-in + custom)
