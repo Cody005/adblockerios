@@ -49,9 +49,23 @@ struct DashboardView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 100)
             }
-            .background(Color.clear)
+            .background(
+                ZStack {
+                    // Deep space base
+                    Color(hex: "060610")
+                    
+                    // Animated orbs
+                    DashboardBackground(isActive: tunnelManager.isConnected)
+                    
+                    // Dot grid overlay
+                    DotGridBackground()
+                }
+                .ignoresSafeArea()
+            )
             .navigationTitle("ShadowGuard")
             .navigationBarTitleDisplayMode(.large)
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(action: { showingBlocklistUpdate = true }) {
@@ -608,6 +622,105 @@ struct WizardStep {
     let description: String
     let icon: String
     let action: String
+}
+
+// MARK: - Dashboard Background
+struct DashboardBackground: View {
+    let isActive: Bool
+    @State private var phase = false
+    @State private var pulse = false
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack {
+                // Bottom-center hero glow — cyan when active, dim purple when off
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: isActive
+                                ? [Color.neonCyan.opacity(0.35), Color.clear]
+                                : [Color.neonPurple.opacity(0.18), Color.clear],
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: 320
+                        )
+                    )
+                    .frame(width: 640, height: 640)
+                    .blur(radius: 30)
+                    .scaleEffect(pulse ? 1.08 : 0.95)
+                    .position(x: geo.size.width / 2, y: geo.size.height * 0.38)
+
+                // Top-right accent orb — pink/magenta
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [Color.neonPink.opacity(0.22), Color.clear],
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: 180
+                        )
+                    )
+                    .frame(width: 360, height: 360)
+                    .blur(radius: 40)
+                    .offset(
+                        x: phase ? geo.size.width * 0.45 : geo.size.width * 0.55,
+                        y: phase ? -40 : 20
+                    )
+
+                // Bottom-left accent orb — green
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [Color.neonGreen.opacity(0.15), Color.clear],
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: 150
+                        )
+                    )
+                    .frame(width: 300, height: 300)
+                    .blur(radius: 35)
+                    .offset(
+                        x: phase ? -geo.size.width * 0.2 : -geo.size.width * 0.1,
+                        y: phase ? geo.size.height * 0.65 : geo.size.height * 0.55
+                    )
+            }
+        }
+        .ignoresSafeArea()
+        .onAppear {
+            withAnimation(.easeInOut(duration: 7).repeatForever(autoreverses: true)) {
+                phase.toggle()
+            }
+            withAnimation(.easeInOut(duration: 3.5).repeatForever(autoreverses: true)) {
+                pulse.toggle()
+            }
+        }
+    }
+}
+
+// MARK: - Dot Grid Background
+struct DotGridBackground: View {
+    var body: some View {
+        GeometryReader { geo in
+            Canvas { context, size in
+                let spacing: CGFloat = 28
+                let dotSize: CGFloat = 1.5
+                let cols = Int(size.width / spacing) + 1
+                let rows = Int(size.height / spacing) + 1
+
+                for row in 0..<rows {
+                    for col in 0..<cols {
+                        let x = CGFloat(col) * spacing
+                        let y = CGFloat(row) * spacing
+                        let rect = CGRect(x: x - dotSize / 2, y: y - dotSize / 2,
+                                          width: dotSize, height: dotSize)
+                        context.fill(Path(ellipseIn: rect),
+                                     with: .color(Color.white.opacity(0.06)))
+                    }
+                }
+            }
+        }
+        .ignoresSafeArea()
+    }
 }
 
 #Preview {
