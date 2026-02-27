@@ -1,0 +1,105 @@
+! Title: EasyList Mini (Bundled)
+! Description: Essential ad-blocking rules for common ad networks
+! Last modified: 2026-01-01
+! Homepage: https://easylist.to/
+
+! Google Ads
+||googlesyndication.com^
+||googleadservices.com^
+||doubleclick.net^
+||googletagmanager.com^
+||googletagservices.com^
+||google-analytics.com^
+||pagead2.googlesyndication.com^
+||adservice.google.com^
+||2mdn.net^
+
+! Facebook/Meta
+||facebook.com/tr^
+||connect.facebook.net^
+||pixel.facebook.com^
+||ads.facebook.com^
+||an.facebook.com^
+
+! Twitter/X
+||analytics.twitter.com^
+||ads-twitter.com^
+||ads-api.twitter.com^
+
+! Amazon
+||amazon-adsystem.com^
+||aax.amazon-adsystem.com^
+||fls-na.amazon-adsystem.com^
+
+! Microsoft
+||ads.microsoft.com^
+||adnxs.com^
+||bat.bing.com^
+
+! Yahoo
+||ads.yahoo.com^
+||advertising.com^
+||gemini.yahoo.com^
+
+! Major Ad Networks
+||criteo.com^
+||criteo.net^
+||outbrain.com^
+||taboola.com^
+||pubmatic.com^
+||rubiconproject.com^
+||openx.net^
+||casalemedia.com^
+||indexww.com^
+||bidswitch.net^
+||smartadserver.com^
+||adform.net^
+||adsrvr.org^
+||serving-sys.com^
+||flashtalking.com^
+||sizmek.com^
+||moatads.com^
+||doubleverify.com^
+||adsafeprotected.com^
+
+! Mobile Ad Networks
+||admob.com^
+||appsflyer.com^
+||adjust.com^
+||branch.io^
+||app.link^
+||mopub.com^
+||unityads.unity3d.com^
+||chartboost.com^
+||vungle.com^
+||ironsrc.com^
+||applovin.com^
+||inmobi.com^
+||adcolony.com^
+||tapjoy.com^
+||fyber.com^
+||startapp.com^
+
+! Analytics & Tracking
+||scorecardresearch.com^
+||quantserve.com^
+||hotjar.com^
+||mixpanel.com^
+||amplitude.com^
+||segment.io^
+||segment.com^
+||newrelic.com^
+||nr-data.net^
+||bugsnag.com^
+||crashlytics.com^
+
+! Social Widgets
+||platform.twitter.com/widgets^
+||connect.facebook.net/en_US/sdk.js^
+||apis.google.com/js/plusone.js^
+
+! Video Ads
+||imasdk.googleapis.com^
+||pubads.g.doubleclick.net^
+||securepubads.g.doubleclick.net^
+||ad.doubleclick.net^
