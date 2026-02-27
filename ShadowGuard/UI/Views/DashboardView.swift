@@ -17,69 +17,85 @@ struct DashboardView: View {
     @State private var isPaused = false
     
     var body: some View {
-        NavigationStack {
+        ZStack(alignment: .top) {
+            // Full-screen background
+            ZStack {
+                Color(hex: "060610")
+                DashboardBackground(isActive: tunnelManager.isConnected)
+                DotGridBackground()
+            }
+            .ignoresSafeArea()
+
+            // Scrollable content
             ScrollView {
                 VStack(spacing: 24) {
+                    // Space for floating header
+                    Spacer().frame(height: 60)
+
                     // Status Header
                     statusHeader
-                    
+
                     // CA Warning Banner (if not trusted)
                     if !appState.isCATrusted {
                         caWarningBanner
                     }
-                    
+
                     // Power Button
                     powerButtonSection
-                    
+
                     // Protection Level Ring
                     protectionRing
-                    
+
                     // Quick Stats
                     statsGrid
-                    
+
                     // Top Blocked Domains
                     topBlockedSection
-                    
+
                     // Blocklist Status
                     blocklistStatusSection
-                    
+
                     // Quick Actions
                     quickActionsSection
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 100)
             }
-            .background(
-                ZStack {
-                    // Deep space base
-                    Color(hex: "060610")
-                    
-                    // Animated orbs
-                    DashboardBackground(isActive: tunnelManager.isConnected)
-                    
-                    // Dot grid overlay
-                    DotGridBackground()
+
+            // Floating top bar
+            HStack {
+                Button(action: { showingBlocklistUpdate = true }) {
+                    Image(systemName: "list.bullet.rectangle")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.neonCyan)
+                        .frame(width: 36, height: 36)
+                        .background(.ultraThinMaterial, in: Circle())
                 }
-                .ignoresSafeArea()
-            )
-            .navigationTitle("ShadowGuard")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(action: { showingBlocklistUpdate = true }) {
-                        Image(systemName: "list.bullet.rectangle")
-                            .foregroundColor(.neonCyan)
-                    }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: { showingCAWizard = true }) {
-                        Image(systemName: "key.fill")
-                            .foregroundColor(appState.isCATrusted ? .neonGreen : .neonOrange)
-                    }
+
+                Spacer()
+
+                Text("ShadowGuard")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.white)
+
+                Spacer()
+
+                Button(action: { showingCAWizard = true }) {
+                    Image(systemName: "key.fill")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(appState.isCATrusted ? .neonGreen : .neonOrange)
+                        .frame(width: 36, height: 36)
+                        .background(.ultraThinMaterial, in: Circle())
                 }
             }
+            .padding(.horizontal, 20)
+            .padding(.top, 8)
+            .frame(height: 60)
+            .background(
+                Color(hex: "060610").opacity(0.6)
+                    .blur(radius: 10)
+                    .ignoresSafeArea(edges: .top)
+            )
         }
         .sheet(isPresented: $showingBlocklistUpdate) {
             BlocklistUpdateSheet()
